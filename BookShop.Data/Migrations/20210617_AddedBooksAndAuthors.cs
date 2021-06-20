@@ -20,7 +20,7 @@ namespace Data.Migrations
                 .WithColumn("Id").AsInt64().PrimaryKey().Identity()
                 .WithColumn("AuthorId").AsInt64().NotNullable()
                 .WithColumn("Title").AsFixedLengthString(150).NotNullable()
-                .WithColumn("Description").AsString();
+                .WithColumn("Description").AsString().Nullable();
 
             Create.Index("IX_Books_AuthorId")
                 .OnTable("Books")
