@@ -5,6 +5,7 @@ using System.Reflection;
 using BookShop.Configuration;
 using Data.Migrations;
 using FluentMigrator.Runner;
+using FluentMigrator.Runner.Initialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -52,6 +53,10 @@ namespace BookShop
                         .ScanIn(typeof(AddedBooksAndAuthors).Assembly)
                         .For.All()
                 )
+                .Configure<RunnerOptions>(config =>
+                {
+                    config.Profile = "Develop";
+                })
                 .AddLogging(config => config.AddFluentMigratorConsole());
         }
 
@@ -79,6 +84,7 @@ namespace BookShop
 
             #region Migrator
 
+            // IRunnerContext migrationContext = new RunnerContext();
             using var scope = app.ApplicationServices.CreateScope();
             var migrator = scope.ServiceProvider.GetService<IMigrationRunner>();
             migrator?.ListMigrations();
