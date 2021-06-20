@@ -23,6 +23,10 @@ namespace BookShop.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Делает что то
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {

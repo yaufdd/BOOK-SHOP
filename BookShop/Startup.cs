@@ -1,16 +1,18 @@
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
+using BookShop.Configuration;
+using Data.Migrations;
+using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 
 namespace BookShop
 {
@@ -26,8 +28,31 @@ namespace BookShop
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddJson();
             services.AddControllers();
-            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "BookShop", Version = "v1"}); });
+            services.AddRepositories();
+            services.AddStorageManagers();
+            services.AddDatabaseFactory(Configuration);
+            services.AddSwaggerGen(c =>
+            {
+                c.IncludeXmlComments(string.Format(@"{0}/BookShop.xml", System.AppDomain.CurrentDomain.BaseDirectory));
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "BookShop", Version = "v1"});
+            });
+
+            // services.AddMvc()
+                // .AddJsonOptions(option => option.ConfigureMvc());
+            
+            services.AddFluentMigratorCore()
+                .ConfigureRunner(config =>
+                    config.AddPostgres()
+                        .WithGlobalConnectionString(Configuration.GetConnectionString("DefaultConnection"))
+                        // .ScanIn(AppDomain.CurrentDomain.GetAssemblies()
+                        // .Single(assembly => assembly.GetName().Name.Equals("BookShop.Data"))
+                        // ) 
+                        .ScanIn(typeof(AddedBooksAndAuthors).Assembly)
+                        .For.All()
+                )
+                .AddLogging(config => config.AddFluentMigratorConsole());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,9 +69,22 @@ namespace BookShop
 
             app.UseRouting();
 
+            // app.UseMvc();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+
+            //TODO: Вынести в отдельное приложение
+
+            #region Migrator
+
+            using var scope = app.ApplicationServices.CreateScope();
+            var migrator = scope.ServiceProvider.GetService<IMigrationRunner>();
+            migrator?.ListMigrations();
+            migrator?.MigrateUp();
+
+            #endregion
         }
     }
 }
