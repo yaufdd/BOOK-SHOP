@@ -1,4 +1,5 @@
 using Data.Repositories;
+using Data.Repositories.DbRepositories;
 using Data.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +10,7 @@ namespace BookShop.Configuration
         public static void AddRepositories(this IServiceCollection services)
         {
             services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddTransient<IBooksRepository, BooksRepository>();
+            services.AddTransient<IBooksRepository, BooksDatabaseRepository>();
         }
     }
 }

@@ -1,9 +1,8 @@
 using System.Data.Common;
-using Data.Repositories.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
-namespace Data.Repositories
+namespace Data.Repositories.DbRepositories
 {
     public abstract class BaseDbConnectionManager : IDbConnectionManager
     {

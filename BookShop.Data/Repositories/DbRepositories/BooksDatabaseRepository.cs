@@ -1,20 +1,19 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Data.Entities;
 using Data.Factories.Interfaces;
+using Data.Repositories.DbRepositories;
 using Data.Repositories.Interfaces;
-using Npgsql;
 
-namespace Data.Repositories
+namespace Data.Repositories.DbRepositories
 {
-    public class BooksRepository : BaseRepository, IBooksRepository
+    public class BooksDatabaseRepository : BaseDatabaseRepository, IBooksRepository
     {
-        public BooksRepository(IDbConnectionFactory dbConnectionFactory)
-            : base(dbConnectionFactory)
+        public BooksDatabaseRepository(IDbTransaction transaction)
+            : base(transaction)
         {
         }
 
@@ -35,24 +34,22 @@ namespace Data.Repositories
             return result.ToImmutableList();
         }
 
-        public Task<Book> AddAsync(Book entity)
+        public async Task<int> AddAsync(Book entity)
+        {
+            if (entity == null) return 0;
+
+            var sql = "Insert into Books (AuthorId, Title, Desctiption) VALUES (@AuthorId,@Title,@Description)";
+            return await Connection.ExecuteAsync(sql, entity, Transaction);
+        }
+
+        public Task<int> UpdateAsync(Book entity)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<Book> UpdateAsync(Book entity)
+        public Task<int> DeleteAsync(int id)
         {
             throw new System.NotImplementedException();
-        }
-
-        public Task<Book> DeleteAsync(int id)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            Connection.Close();
         }
     }
 }
